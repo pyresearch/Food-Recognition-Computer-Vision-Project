@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Food Nutrition Fun!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #fef3c7, #fed7aa);
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .hero {
+            background: linear-gradient(45deg, #f97316, #ef4444);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            animation: fadeIn 1s ease-in;
+            margin-bottom: 1rem;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .sidebar {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            padding: 1rem;
+            animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn {
+            0% { opacity: 0; transform: translateX(-20px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        .sidebar:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .result-card {
+            background: linear-gradient(145deg, #ffffff, #f3f4f6);
+            border-radius: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            animation: bounceIn 0.6s ease forwards;
+            opacity: 0;
+        }
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.95); }
+            50% { transform: scale(1.03); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #ef4444;
+            border-radius: 50%;
+            width: 1.25rem;
+            height: 1.25rem;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .collapsible-header {
+            cursor: pointer;
+            padding: 0.5rem;
+            background: linear-gradient(135deg, #fed7aa, #f97316);
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .collapsible-header:hover {
+            background: linear-gradient(135deg, #f97316, #fed7aa);
+            transform: scale(1.01);
+        }
+        .collapsible-content {
+            display: none;
+            padding: 0.5rem 0;
+            transition: opacity 0.3s ease;
+        }
+        .collapsible-content.show {
+            display: block;
+            opacity: 1;
+        }
+        .chart-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        .chart-container:hover canvas {
+            transform: scale(1.05);
+        }
+        #imageContainer img, #videoContainer video {
+            max-width: 100%;
+            max-height: 200px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #preview img, #preview video {
+            max-width: 100%;
+            max-height: 150px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 0.75rem;
+        }
+        footer {
+            background: #1f2937;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 0.5rem;
+            }
+            .hero {
+                padding: 1rem;
+            }
+            .sidebar {
+                padding: 0.75rem;
+            }
+            .result-card {
+                padding: 0.5rem;
+            }
+            .chart-container {
+                width: 110px;
+                height: 110px;
+            }
+            .text-4xl {
+                font-size: 1.5rem;
+            }
+            .text-2xl {
+                font-size: 1.25rem;
+            }
+            .text-lg {
+                font-size: 0.875rem;
+            }
+            .text-sm {
+                font-size: 0.75rem;
+            }
+            .px-6 {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            .py-3 {
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            .collapsible-header {
+                padding: 0.4rem;
+            }
+            .chart-toggle {
+                width: 1.25rem;
+                height: 1.25rem;
+                font-size: 0.65rem;
+            }
+            footer {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <div class="container mx-auto py-4">
+        <div class="hero">
+            <h1 class="text-4xl font-bold text-white mb-2 animate-pulse">
+                <i class="fas fa-utensils mr-2"></i>Food Nutrition Fun!
+            </h1>
+            <p class="text-lg text-white/80">Discover the nutrition in your favorite dishes!</p>
+        </div>
+
+        <!-- Sidebar for Upload -->
+        <div class="sidebar grid grid-cols-1 gap-4 mb-4">
+            <div class="flex flex-col items-center">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-3 text-center">
+                    <i class="fas fa-upload mr-2"></i>Upload Your Yummy Food!
+                </h2>
+                <input 
+                    type="file" 
+                    id="fileInput" 
+                    accept="image/jpeg,image/png,video/mp4,video/webm" 
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 mb-3"
+                    aria-label="Upload food image or video"
+                >
+                <button 
+                    id="uploadBtn" 
+                    class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors duration-200 flex items-center gap-2 disabled:bg-orange-400"
+                    aria-label="Upload file"
+                    disabled
+                >
+                    <span>Upload</span>
+                    <div id="spinner" class="spinner"></div>
+                </button>
+            </div>
+            <div id="preview" class="hidden bg-gray-100 rounded-lg p-2 flex items-center justify-center">
+                <p class="text-gray-500 text-sm">Preview your delicious dish here!</p>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="result" class="grid gap-4">
+            <div id="mediaContainer" class="mb-3">
+                <div id="imageContainer" class="hidden">
+                    <img id="outputImage" class="rounded-lg shadow-md" alt="Detected Food Image">
+                </div>
+                <div id="videoContainer" class="hidden">
+                    <video id="outputVideo" class="rounded-lg shadow-md" controls alt="Detected Food Video"></video>
+                </div>
+            </div>
+            <div id="detections" class="grid gap-3"></div>
+        </div>
+
+        <footer>
+            <p>Powered by <a href="https://github.com/pyresearch" target="_blank" class="underline hover:text-orange-400">pyresearch</a> for nutritional data processing.</p>
+        </footer>
+    </div>
+
+    <script>
+        const uploadBtn = document.getElementById('uploadBtn');
+        const spinner = document.getElementById('spinner');
+        const fileInput = document.getElementById('fileInput');
+        const imageContainer = document.getElementById('imageContainer');
+        const videoContainer = document.getElementById('videoContainer');
+        const detectionsDiv = document.getElementById('detections');
+        const previewDiv = document.getElementById('preview');
+        let charts = [];
+
+        fileInput.addEventListener('change', () => {
+            uploadBtn.disabled = !fileInput.files.length;
+            previewDiv.classList.add('hidden');
+            previewDiv.innerHTML = '<p class="text-gray-500 text-sm"><i class="fas fa-camera mr-1"></i>Preview your delicious dish here!</p>';
+            if (fileInput.files.length) {
+                const file = fileInput.files[0];
+                if (file.type.match('image/jpeg|image/png|video/mp4|video/webm')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        previewDiv.classList.remove('hidden');
+                        if (file.type.startsWith('image')) {
+                            previewDiv.innerHTML = `<img src="${e.target.result}" class="rounded-lg" alt="Preview">`;
+                        } else if (file.type.startsWith('video')) {
+                            previewDiv.innerHTML = `<video src="${e.target.result}" class="rounded-lg" controls muted></video>`;
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Please upload a valid image (JPEG/PNG) or video (MP4/WebM).');
+                    fileInput.value = '';
+                    uploadBtn.disabled = true;
+                }
+            }
+        });
+
+        uploadBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+
+            uploadBtn.disabled = true;
+            spinner.style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                console.log('Server response:', result); // Debugging
+
+                uploadBtn.disabled = false;
+                spinner.style.display = 'none';
+
+                if (response.ok) {
+                    imageContainer.classList.add('hidden');
+                    videoContainer.classList.add('hidden');
+                    detectionsDiv.innerHTML = '';
+                    previewDiv.classList.add('hidden');
+                    charts.forEach(chart => chart.destroy());
+                    charts = [];
+
+                    if (file.type.startsWith('image')) {
+                        if (result.image) {
+                            imageContainer.classList.remove('hidden');
+                            document.getElementById('outputImage').src = `data:image/jpeg;base64,${result.image}`;
+                        } else {
+                            console.warn('No image data in response');
+                            alert('No processed image received from server.');
+                        }
+                    } else if (file.type.startsWith('video')) {
+                        if (result.frames && result.frames.length > 0) {
+                            videoContainer.classList.remove('hidden');
+                            const video = document.getElementById('outputVideo');
+                            video.src = URL.createObjectURL(file);
+                            let frameIndex = 0;
+                            const updateFrame = () => {
+                                video.poster = `data:image/jpeg;base64,${result.frames[frameIndex]}`;
+                                frameIndex = (frameIndex + 1) % result.frames.length;
+                            };
+                            updateFrame();
+                            video.onloadedmetadata = () => {
+                                video.play().catch(e => console.error('Video play failed:', e));
+                            };
+                            setInterval(updateFrame, 1000 / 24); // 24 FPS
+                        } else {
+                            console.warn('No frames in response');
+                            alert('No processed video frames received.');
+                        }
+                    }
+
+                    detectionsDiv.innerHTML = '<h2 class="text-2xl font-semibold text-orange-800 mb-3"><i class="fas fa-utensils mr-2"></i>Detected Yummy Foods!</h2>';
+                    if (!result.detections || result.detections.length === 0) {
+                        detectionsDiv.innerHTML += '<p class="text-gray-600 text-sm"><i class="fas fa-exclamation-circle mr-1"></i>No foods detected. Try another image or video!</p>';
+                        return;
+                    }
+
+                    result.detections.forEach((det, index) => {
+                        const nutrition = det.nutrition || {};
+                        detectionsDiv.innerHTML += `
+                            <div class="result-card" style="animation-delay: ${index * 0.1}s">
+                                <h3 class="text-lg font-bold text-orange-700"><i class="fas fa-drumstick-bite mr-2"></i>${det.label || 'Unknown'}</h3>
+                                <p class="text-gray-600 text-sm">Confidence: ${(det.confidence * 100).toFixed(2)}%</p>
+                                <div class="mt-2 text-sm text-gray-600">
+                                    <p><strong><i class="fas fa-fire mr-1"></i>Calories:</strong> ${nutrition.calories || 0} kcal</p>
+                                    <div class="collapsible-header mt-2">
+                                        <strong><i class="fas fa-bread-slice mr-1"></i>Carbohydrates</strong> <button class="text-xs bg-blue-500 text-white rounded-full chart-toggle">📊</button>
+                                    </div>
+                                    <div class="collapsible-content">
+                                        <p>Total: ${nutrition.carbohydrates?.total || 0}g</p>
+                                        <p>Sugars: ${nutrition.carbohydrates?.sugars || 0}g</p>
+                                        <p>Fiber: ${nutrition.carbohydrates?.fiber || 0}g</p>
+                                        <div class="chart-container mt-2"><canvas id="carbChart${index}"></canvas></div>
+                                    </div>
+                                    <div class="collapsible-header mt-2">
+                                        <strong><i class="fas fa-cheese mr-1"></i>Fats</strong> <button class="text-xs bg-green-500 text-white rounded-full chart-toggle">📊</button>
+                                    </div>
+                                    <div class="collapsible-content">
+                                        <p>Total: ${nutrition.fats?.total || 0}g</p>
+                                        <p>Saturated: ${nutrition.fats?.saturated || 0}g</p>
+                                        <p>Unsaturated: ${nutrition.fats?.unsaturated || 0}g</p>
+                                        <div class="chart-container mt-2"><canvas id="fatChart${index}"></canvas></div>
+                                    </div>
+                                    <div class="collapsible-header mt-2">
+                                        <strong><i class="fas fa-egg mr-1"></i>Proteins</strong> <button class="text-xs bg-yellow-500 text-white rounded-full chart-toggle">📊</button>
+                                    </div>
+                                    <div class="collapsible-content">
+                                        <p>Total: ${nutrition.proteins?.total || 0}g</p>
+                                        <p>Amino Acids:</p>
+                                        <ul class="list-disc pl-4 text-xs">
+                                            <li>Lysine: ${nutrition.proteins?.amino_acids?.lysine || 0}mg</li>
+                                            <li>Methionine: ${nutrition.proteins?.amino_acids?.methionine || 0}mg</li>
+                                        </ul>
+                                        <div class="chart-container mt-2"><canvas id="proteinChart${index}"></canvas></div>
+                                    </div>
+                                    <div class="collapsible-header mt-2">
+                                        <strong><i class="fas fa-leaf mr-1"></i>Vitamins</strong> <button class="text-xs bg-purple-500 text-white rounded-full chart-toggle">📊</button>
+                                    </div>
+                                    <div class="collapsible-content">
+                                        <p>Vitamin A: ${nutrition.vitamins?.vitamin_a || 0} IU</p>
+                                        <p>Vitamin C: ${nutrition.vitamins?.vitamin_c || 0}mg</p>
+                                        <p>Vitamin D: ${nutrition.vitamins?.vitamin_d || 0} IU</p>
+                                        <div class="chart-container mt-2"><canvas id="vitaminChart${index}"></canvas></div>
+                                    </div>
+                                    <div class="collapsible-header mt-2">
+                                        <strong><i class="fas fa-gem mr-1"></i>Minerals</strong> <button class="text-xs bg-teal-500 text-white rounded-full chart-toggle">📊</button>
+                                    </div>
+                                    <div class="collapsible-content">
+                                        <p>Calcium: ${nutrition.minerals?.calcium || 0}mg</p>
+                                        <p>Iron: ${nutrition.minerals?.iron || 0}mg</p>
+                                        <p>Potassium: ${nutrition.minerals?.potassium || 0}mg</p>
+                                        <div class="chart-container mt-2"><canvas id="mineralChart${index}"></canvas></div>
+                                    </div>
+                                    <div class="collapsible-header mt-2">
+                                        <strong><i class="fas fa-seedling mr-1"></i>Sterols</strong> <button class="text-xs bg-pink-500 text-white rounded-full chart-toggle">📊</button>
+                                    </div>
+                                    <div class="collapsible-content">
+                                        <p>Cholesterol: ${nutrition.sterols?.cholesterol || 0}mg</p>
+                                        <p>Phytosterols: ${nutrition.sterols?.phytosterols || 0}mg</p>
+                                        <div class="chart-container mt-2"><canvas id="sterolChart${index}"></canvas></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        const createChart = (id, data, unit = 'g') => {
+                            return new Chart(document.getElementById(id).getContext('2d'), {
+                                type: 'pie',
+                                data,
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    animation: { animateRotate: true, animateScale: true },
+                                    plugins: {
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(context) {
+                                                    const label = context.label || '';
+                                                    const value = context.raw || 0;
+                                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                    const percentage = total ? ((value / total) * 100).toFixed(1) : 0;
+                                                    return `${label}: ${value}${unit} (${percentage}%)`;
+                                                }
+                                            }
+                                        },
+                                        legend: {
+                                            position: 'bottom',
+                                            labels: { font: { size: 10 }, boxWidth: 10, padding: 5 }
+                                        }
+                                    }
+                                }
+                            });
+                        };
+
+                        charts.push(createChart(`carbChart${index}`, {
+                            labels: ['Total', 'Sugars', 'Fiber'],
+                            datasets: [{
+                                data: [nutrition.carbohydrates?.total || 0, nutrition.carbohydrates?.sugars || 0, nutrition.carbohydrates?.fiber || 0],
+                                backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(147, 197, 253, 0.8)', 'rgba(96, 165, 250, 0.8)'],
+                                borderColor: ['rgba(59, 130, 246, 1)', 'rgba(147, 197, 253, 1)', 'rgba(96, 165, 250, 1)'],
+                                borderWidth: 1
+                            }]
+                        }));
+                        charts.push(createChart(`fatChart${index}`, {
+                            labels: ['Total', 'Saturated', 'Unsaturated'],
+                            datasets: [{
+                                data: [nutrition.fats?.total || 0, nutrition.fats?.saturated || 0, nutrition.fats?.unsaturated || 0],
+                                backgroundColor: ['rgba(34, 197, 94, 0.8)', 'rgba(132, 204, 22, 0.8)', 'rgba(187, 247, 208, 0.8)'],
+                                borderColor: ['rgba(34, 197, 94, 1)', 'rgba(132, 204, 22, 1)', 'rgba(187, 247, 208, 1)'],
+                                borderWidth: 1
+                            }]
+                        }));
+                        charts.push(createChart(`proteinChart${index}`, {
+                            labels: ['Total'],
+                            datasets: [{
+                                data: [nutrition.proteins?.total || 0],
+                                backgroundColor: ['rgba(251, 191, 36, 0.8)'],
+                                borderColor: ['rgba(251, 191, 36, 1)'],
+                                borderWidth: 1
+                            }]
+                        }));
+                        charts.push(createChart(`vitaminChart${index}`, {
+                            labels: ['Vitamin A', 'Vitamin C', 'Vitamin D'],
+                            datasets: [{
+                                data: [nutrition.vitamins?.vitamin_a || 0, nutrition.vitamins?.vitamin_c || 0, nutrition.vitamins?.vitamin_d || 0],
+                                backgroundColor: ['rgba(168, 85, 247, 0.8)', 'rgba(217, 70, 239, 0.8)', 'rgba(233, 213, 255, 0.8)'],
+                                borderColor: ['rgba(168, 85, 247, 1)', 'rgba(217, 70, 239, 1)', 'rgba(233, 213, 255, 1)'],
+                                borderWidth: 1
+                            }]
+                        }, ''));
+                        charts.push(createChart(`mineralChart${index}`, {
+                            labels: ['Calcium', 'Iron', 'Potassium'],
+                            datasets: [{
+                                data: [nutrition.minerals?.calcium || 0, nutrition.minerals?.iron || 0, nutrition.minerals?.potassium || 0],
+                                backgroundColor: ['rgba(20, 184, 166, 0.8)', 'rgba(45, 212, 191, 0.8)', 'rgba(167, 243, 208, 0.8)'],
+                                borderColor: ['rgba(20, 184, 166, 1)', 'rgba(45, 212, 191, 1)', 'rgba(167, 243, 208, 1)'],
+                                borderWidth: 1
+                            }]
+                        }, 'mg'));
+                        charts.push(createChart(`sterolChart${index}`, {
+                            labels: ['Cholesterol', 'Phytosterols'],
+                            datasets: [{
+                                data: [nutrition.sterols?.cholesterol || 0, nutrition.sterols?.phytosterols || 0],
+                                backgroundColor: ['rgba(236, 72, 153, 0.8)', 'rgba(249, 168, 212, 0.8)'],
+                                borderColor: ['rgba(236, 72, 153, 1)', 'rgba(249, 168, 212, 1)'],
+                                borderWidth: 1
+                            }]
+                        }, 'mg'));
+                    });
+
+                    document.querySelectorAll('.collapsible-header').forEach(header => {
+                        header.addEventListener('click', () => {
+                            const content = header.nextElementSibling;
+                            content.classList.toggle('show');
+                            if (content.classList.contains('show')) {
+                                content.style.opacity = '0';
+                                setTimeout(() => { content.style.opacity = '1'; }, 10);
+                            }
+                        });
+                    });
+
+                    document.querySelectorAll('.chart-toggle').forEach(button => {
+                        button.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const chartCanvas = button.parentElement.nextElementSibling.querySelector('canvas');
+                            const chart = Chart.getChart(chartCanvas.id);
+                            if (chart) {
+                                chart.destroy();
+                                charts = charts.filter(c => c !== chart);
+                                button.textContent = '📊';
+                            } else {
+                                const index = Array.from(button.closest('.result-card').parentElement.querySelectorAll('.result-card')).indexOf(button.closest('.result-card'));
+                                const nutrition = result.detections[index]?.nutrition || {};
+                                const section = button.parentElement.querySelector('strong').textContent.replace(/[^a-zA-Z]/g, '');
+                                const chartData = {
+                                    'Carbohydrates': {
+                                        labels: ['Total', 'Sugars', 'Fiber'],
+                                        datasets: [{
+                                            data: [nutrition.carbohydrates?.total || 0, nutrition.carbohydrates?.sugars || 0, nutrition.carbohydrates?.fiber || 0],
+                                            backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(147, 197, 253, 0.8)', 'rgba(96, 165, 250, 0.8)'],
+                                            borderColor: ['rgba(59, 130, 246, 1)', 'rgba(147, 197, 253, 1)', 'rgba(96, 165, 250, 1)'],
+                                            borderWidth: 1
+                                        }]
+                                    },
+                                    'Fats': {
+                                        labels: ['Total', 'Saturated', 'Unsaturated'],
+                                        datasets: [{
+                                            data: [nutrition.fats?.total || 0, nutrition.fats?.saturated || 0, nutrition.fats?.unsaturated || 0],
+                                            backgroundColor: ['rgba(34, 197, 94, 0.8)', 'rgba(132, 204, 22, 0.8)', 'rgba(187, 247, 208, 0.8)'],
+                                            borderColor: ['rgba(34, 197, 94, 1)', 'rgba(132, 204, 22, 1)', 'rgba(187, 247, 208, 1)'],
+                                            borderWidth: 1
+                                        }]
+                                    },
+                                    'Proteins': {
+                                        labels: ['Total'],
+                                        datasets: [{
+                                            data: [nutrition.proteins?.total || 0],
+                                            backgroundColor: ['rgba(251, 191, 36, 0.8)'],
+                                            borderColor: ['rgba(251, 191, 36, 1)'],
+                                            borderWidth: 1
+                                        }]
+                                    },
+                                    'Vitamins': {
+                                        labels: ['Vitamin A', 'Vitamin C', 'Vitamin D'],
+                                        datasets: [{
+                                            data: [nutrition.vitamins?.vitamin_a || 0, nutrition.vitamins?.vitamin_c || 0, nutrition.vitamins?.vitamin_d || 0],
+                                            backgroundColor: ['rgba(168, 85, 247, 0.8)', 'rgba(217, 70, 239, 0.8)', 'rgba(233, 213, 255, 0.8)'],
+                                            borderColor: ['rgba(168, 85, 247, 1)', 'rgba(217, 70, 239, 1)', 'rgba(233, 213, 255, 1)'],
+                                            borderWidth: 1
+                                        }]
+                                    },
+                                    'Minerals': {
+                                        labels: ['Calcium', 'Iron', 'Potassium'],
+                                        datasets: [{
+                                            data: [nutrition.minerals?.calcium || 0, nutrition.minerals?.iron || 0, nutrition.minerals?.potassium || 0],
+                                            backgroundColor: ['rgba(20, 184, 166, 0.8)', 'rgba(45, 212, 191, 0.8)', 'rgba(167, 243, 208, 0.8)'],
+                                            borderColor: ['rgba(20, 184, 166, 1)', 'rgba(45, 212, 191, 1)', 'rgba(167, 243, 208, 1)'],
+                                            borderWidth: 1
+                                        }]
+                                    },
+                                    'Sterols': {
+                                        labels: ['Cholesterol', 'Phytosterols'],
+                                        datasets: [{
+                                            data: [nutrition.sterols?.cholesterol || 0, nutrition.sterols?.phytosterols || 0],
+                                            backgroundColor: ['rgba(236, 72, 153, 0.8)', 'rgba(249, 168, 212, 0.8)'],
+                                            borderColor: ['rgba(236, 72, 153, 1)', 'rgba(249, 168, 212, 1)'],
+                                            borderWidth: 1
+                                        }]
+                                    }
+                                }[section];
+                                const unit = ['Vitamins', 'Minerals', 'Sterols'].includes(section) ? '' : 'g';
+                                charts.push(createChart(chartCanvas.id, chartData, unit));
+                                button.textContent = '📉';
+                            }
+                        });
+                    });
+                } else {
+                    console.error('Upload error:', result.error);
+                    alert(`Upload failed: ${result.error}`);
+                }
+            } catch (error) {
+                uploadBtn.disabled = false;
+                spinner.style.display = 'none';
+                console.error('Fetch error:', error);
+                alert('An error occurred during upload. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
